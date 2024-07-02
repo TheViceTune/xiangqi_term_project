@@ -31,7 +31,8 @@ public class Knight extends Piece {
                 if (isFirstColumnExclusion(this.position, nextCoord) ||
                         isSecondColumnExclusion(this.position, nextCoord) ||
                         isEighthColumnExclusion(this.position, nextCoord) ||
-                        isNinthColumnExclusion(this.position, nextCoord)) {
+                        isNinthColumnExclusion(this.position, nextCoord) ||
+                        isBlocked(board, position, nextCoord)) {
                     continue;
                 }
                 final Tile candidateTile = Board.getTile(candidateDestination);
@@ -77,5 +78,24 @@ public class Knight extends Piece {
     public static boolean isNinthColumnExclusion(final int position, final int candidateOffset) {
         return BoardUtils.NINTH_COLUMN[position] && ((candidateOffset == 19) || (candidateOffset == 11)
                 || (candidateOffset == -7) || (candidateOffset == -17));
+    }
+
+    public static boolean isBlocked(final Board board, final int position, final int candidateOffset) {
+        switch (candidateOffset) {
+            case -19:
+            case -17:
+                return board.getTile(position - 9).isOccupied();
+            case -11:
+            case 7:
+                return board.getTile(position - 1).isOccupied();
+            case -7:
+            case 11:
+                return board.getTile(position + 1).isOccupied();
+            case 17:
+            case 19:
+                return board.getTile(position + 9).isOccupied();
+            default:
+                return false;
+        }
     }
 }

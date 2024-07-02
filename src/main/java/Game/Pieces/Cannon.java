@@ -26,6 +26,8 @@ public class Cannon extends Piece {
 
         for (final int nextCoord : CANDIDATE) {
             candidateDestination = this.position;
+            boolean hasJumped = false;
+
             while (BoardUtils.isValid(candidateDestination)) {
                 if (isFirstColumnExclusion(this.position, nextCoord) ||
                         isNinthColumnExclusion(this.position, nextCoord)) {
@@ -35,14 +37,19 @@ public class Cannon extends Piece {
                 if (BoardUtils.isValid(candidateDestination)) {
                     final Tile candidateTile = Board.getTile(candidateDestination);
                     if (!candidateTile.isOccupied()) {
-                        legalMoves.add(new MajorMove(board, this, candidateDestination));
-                    } else {
-                        final Piece atDestination = candidateTile.getPiece();
-                        final Side destinationSide = atDestination.getSide();
-                        if (this.pieceSide != destinationSide) {
-                            legalMoves.add(new AttackMove(board, this, candidateDestination, atDestination));
+                        if (!hasJumped) {
+                            legalMoves.add(new MajorMove(board, this, candidateDestination));
                         }
-                        break;
+                    } else {
+                        if (hasJumped) {
+                            final Piece atDestination = candidateTile.getPiece();
+                            final Side destinationSide = atDestination.getSide();
+                            if (this.pieceSide != destinationSide) {
+                                legalMoves.add(new AttackMove(board, this, candidateDestination, atDestination));
+                            }
+                            break;
+                        }
+                        hasJumped = true;
                     }
                 }
             }
@@ -61,10 +68,10 @@ public class Cannon extends Piece {
     }
 
     public static boolean isFirstColumnExclusion(final int position, final int candidateOffset) {
-        return BoardUtils.FIRST_COLUMN[position] && ((candidateOffset == -1));
+        return BoardUtils.FIRST_COLUMN[position] && (candidateOffset == -1);
     }
 
     public static boolean isNinthColumnExclusion(final int position, final int candidateOffset) {
-        return BoardUtils.NINTH_COLUMN[position] && ((candidateOffset == 1));
+        return BoardUtils.NINTH_COLUMN[position] && (candidateOffset == 1);
     }
 }

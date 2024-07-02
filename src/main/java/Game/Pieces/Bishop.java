@@ -13,28 +13,37 @@ import Game.Board.Tile;
 import Game.Side;
 
 public class Bishop extends Piece {
-
-    private final static int[] CANDIDATE = { -20, -16, 16, 20 };
+    private final int[] CANDIDATE;
 
     public Bishop(int position, Side pieceSide) {
         super(PieceType.BISHOP, position, pieceSide);
+        this.CANDIDATE = determineCandidateOffsets(this.position);
+    }
+
+    private int[] determineCandidateOffsets(int position) {
+        if (position == 2 || position == 47 || position == 6 || position == 51) {
+            return new int[] { 16, 20 };
+        } else if (position == 18 || position == 63) {
+            return new int[] { 20 };
+        } else if (position == 38 || position == 83 || position == 42 || position == 87) {
+            return new int[] { -16, -20 };
+        } else if (position == 22 || position == 67) {
+            return new int[] { -20, -16, 16, 20 };
+        } else {
+            return new int[] { 16 };
+        }
     }
 
     @Override
     public Collection<Move> legalMoves(Board board) {
         final List<Move> legalMoves = new ArrayList<>();
-        int candidateDestination;
-
         for (final int nextCoord : CANDIDATE) {
-            candidateDestination = this.position + nextCoord;
+            int candidateDestination = this.position + nextCoord;
             if (BoardUtils.isValid(candidateDestination)) {
-                if (isFirstColumnExclusion(this.position, nextCoord) ||
-                        isSecondColumnExclusion(this.position, nextCoord) ||
-                        isEighthColumnExclusion(this.position, nextCoord) ||
-                        isNinthColumnExclusion(this.position, nextCoord)) {
+                if (isBlocked(board, this.position, nextCoord)) {
                     continue;
                 }
-                final Tile candidateTile = Board.getTile(candidateDestination);
+                final Tile candidateTile = board.getTile(candidateDestination);
 
                 if (!candidateTile.isOccupied()) {
                     legalMoves.add(new MajorMove(board, this, candidateDestination));
@@ -45,7 +54,6 @@ public class Bishop extends Piece {
                     if (this.pieceSide != destinationSide) {
                         legalMoves.add(new AttackMove(board, this, candidateDestination, atDestination));
                     }
-                    break;
                 }
             }
         }
@@ -62,19 +70,18 @@ public class Bishop extends Piece {
         return PieceType.BISHOP.toString();
     }
 
-    public static boolean isFirstColumnExclusion(final int position, final int candidateOffset) {
-        return BoardUtils.FIRST_COLUMN[position] && ((candidateOffset == -20) || (candidateOffset == 16));
-    }
-
-    public static boolean isSecondColumnExclusion(final int position, final int candidateOffset) {
-        return BoardUtils.SECOND_COLUMN[position] && ((candidateOffset == 16) || (candidateOffset == -20));
-    }
-
-    public static boolean isEighthColumnExclusion(final int position, final int candidateOffset) {
-        return BoardUtils.EIGHTH_COLUMN[position] && ((candidateOffset == -16) || (candidateOffset == 20));
-    }
-
-    public static boolean isNinthColumnExclusion(final int position, final int candidateOffset) {
-        return BoardUtils.NINTH_COLUMN[position] && ((candidateOffset == 20) || (candidateOffset == -16));
+    public static boolean isBlocked(final Board board, final int position, final int candidateOffset) {
+        switch (candidateOffset) {
+            case -16:
+                return board.getTile(position - 8).isOccupied();
+            case -20:
+                return board.getTile(position - 10).isOccupied();
+            case 16:
+                return board.getTile(position + 8).isOccupied();
+            case 20:
+                return board.getTile(position + 10).isOccupied();
+            default:
+                return false;
+        }
     }
 }
