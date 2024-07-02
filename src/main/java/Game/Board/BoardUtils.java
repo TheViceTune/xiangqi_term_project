@@ -2,6 +2,8 @@ package Game.Board;
 
 import java.util.Arrays;
 
+import Game.Side;
+
 public class BoardUtils {
 
     public static final boolean[] FIRST_COLUMN = initColumn(0);
@@ -52,7 +54,12 @@ public class BoardUtils {
         return coord >= 0 && coord < NUM_TILES;
     }
 
-    public static boolean isBeforeRiver(int coord) {
-        return coord <= 44;
+    public static boolean isBeforeRiver(int coord, Side pieceSide) {
+        if (coord <= 44 && pieceSide == Side.Red) {
+            return true;
+        } else if (coord >= 44 && pieceSide == Side.Black) {
+            return true;
+        }
+        return false;
     }
 }

@@ -14,7 +14,7 @@ import Game.Side;
 
 public class Bishop extends Piece {
 
-    private final static int[] CANDIDATE = { -20, -16, -10, -8, 8, 10, 16, 20 };
+    private final static int[] CANDIDATE = { -20, -16, 16, 20 };
 
     public Bishop(int position, Side pieceSide) {
         super(PieceType.BISHOP, position, pieceSide);
@@ -30,7 +30,7 @@ public class Bishop extends Piece {
             if (BoardUtils.isValid(candidateDestination)) {
                 if (isFirstColumnExclusion(this.position, nextCoord) ||
                         isSecondColumnExclusion(this.position, nextCoord) ||
-                        isSeventhColumnExclusion(this.position, nextCoord) ||
+                        isEighthColumnExclusion(this.position, nextCoord) ||
                         isNinthColumnExclusion(this.position, nextCoord)) {
                     continue;
                 }
@@ -63,20 +63,18 @@ public class Bishop extends Piece {
     }
 
     public static boolean isFirstColumnExclusion(final int position, final int candidateOffset) {
-        return BoardUtils.FIRST_COLUMN[position] && ((candidateOffset == -20) || (candidateOffset == -10)
-                || (candidateOffset == 8) || (candidateOffset == 16));
+        return BoardUtils.FIRST_COLUMN[position] && ((candidateOffset == -20) || (candidateOffset == 16));
     }
 
     public static boolean isSecondColumnExclusion(final int position, final int candidateOffset) {
         return BoardUtils.SECOND_COLUMN[position] && ((candidateOffset == 16) || (candidateOffset == -20));
     }
 
-    public static boolean isSeventhColumnExclusion(final int position, final int candidateOffset) {
-        return BoardUtils.SEVENTH_COLUMN[position] && ((candidateOffset == -16) || (candidateOffset == 20));
+    public static boolean isEighthColumnExclusion(final int position, final int candidateOffset) {
+        return BoardUtils.EIGHTH_COLUMN[position] && ((candidateOffset == -16) || (candidateOffset == 20));
     }
 
     public static boolean isNinthColumnExclusion(final int position, final int candidateOffset) {
-        return BoardUtils.NINTH_COLUMN[position] && ((candidateOffset == 20) || (candidateOffset == 10)
-                || (candidateOffset == -8) || (candidateOffset == -16));
+        return BoardUtils.NINTH_COLUMN[position] && ((candidateOffset == 20) || (candidateOffset == -16));
     }
 }

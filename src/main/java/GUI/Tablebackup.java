@@ -7,7 +7,12 @@ import javax.imageio.*;
 import java.util.*;
 import java.awt.image.*;
 import java.io.*;
+import java.awt.event.MouseEvent;
 import Game.Board.Board;
+import Game.Board.Tile;
+import Game.Pieces.Piece;
+import Game.Player.MoveTransition;
+import Game.Board.Move;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -16,24 +21,24 @@ import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.util.ArrayList;
 
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JPanel;
-
 import Game.Board.BoardUtils;
 
 public class Table {
     private final JFrame gameFrame;
     private final BoardPanel boardPanel;
-    private final Board chessBoard;
+    private Board chessBoard;
+    private Tile sourceTile;
+    private Tile destinationTile;
+    private Piece playerMovedPiece;
+    private BoardDirection boardDirection;
 
     private static Dimension outer = new Dimension(600, 600);
     private static Dimension boarddim = new Dimension(400, 350);
     private static Dimension tiledim = new Dimension(10, 10);
-    private static String defaultPiecePath = "art/pieces/chinese";
+    private static String defaultPiecePath = "art/pieces/chinese/";
 
     public Table() {
+        this.boardDirection = BoardDirection.NORMAL;
         this.gameFrame = new JFrame("Chinese Chess");
         this.gameFrame.setLayout(new BorderLayout());
         final JMenuBar tableMenuBar = populateMenuBar();
@@ -49,6 +54,7 @@ public class Table {
     private JMenuBar populateMenuBar() {
         final JMenuBar tableMenuBar = new JMenuBar();
         tableMenuBar.add(createFileMenu());
+        tableMenuBar.add(createPreferencesMenu());
         return tableMenuBar;
     }
 
@@ -75,6 +81,50 @@ public class Table {
         return fileMenu;
     }
 
+    private JMenu createPreferencesMenu() {
+        final JMenu preferencesMenu = new JMenu("Preferences");
+        final JMenuItem flipBoard = new JMenuItem("Flip Board");
+        flipBoard.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(final ActionEvent e) {
+                boardDirection = boardDirection.opposite();
+                boardPanel.drawBoard(chessBoard);
+            }
+        });
+        preferencesMenu.add(flipBoard);
+        return preferencesMenu;
+    }
+
+    public enum BoardDirection {
+        NORMAL {
+            @Override
+            java.util.List<TilePanel> traverse(final java.util.List<TilePanel> boardTiles) {
+                return boardTiles;
+            }
+
+            @Override
+            BoardDirection opposite() {
+                return FLIPPED;
+            }
+        },
+        FLIPPED {
+            @Override
+            java.util.List<TilePanel> traverse(final java.util.List<TilePanel> boardTiles) {
+                Collections.reverse(boardTiles);
+                return boardTiles;
+            }
+
+            @Override
+            BoardDirection opposite() {
+                return NORMAL;
+            }
+        };
+
+        abstract java.util.List<TilePanel> traverse(final java.util.List<TilePanel> boardTiles);
+
+        abstract BoardDirection opposite();
+    }
+
     private class TilePanel extends JPanel {
         private final int tileID;
 
@@ -84,6 +134,62 @@ public class Table {
             setPreferredSize(tiledim);
             assignTileColor();
             assignTilePieceIcon(chessBoard);
+            addMouseListener(new MouseListener() {
+                @Override
+                public void mouseClicked(final MouseEvent e) {
+                    if (SwingUtilities.isRightMouseButton(e)) {
+                        sourceTile = null;
+                        destinationTile = null;
+                        playerMovedPiece = null;
+                    } else if (SwingUtilities.isLeftMouseButton(e)) {
+                        if (sourceTile == null) {
+                            sourceTile = chessBoard.getTile(tileID);
+                            playerMovedPiece = sourceTile.getPiece();
+                            if (playerMovedPiece == null) {
+                                sourceTile = null;
+                            }
+                        } else {
+                            destinationTile = chessBoard.getTile(tileID);
+                            final Move move = Move.MoveFactory.createMove(chessBoard, sourceTile.getCoord(),
+                                    destinationTile.getCoord());
+                            final MoveTransition transition = chessBoard.currentPlayer().makeMove(move);
+                            if (transition.getMoveStatus().isDone()) {
+                                chessBoard = transition.getTransitionBoard();
+                                // add to move logger;
+                            }
+                            sourceTile = null;
+                            destinationTile = null;
+                            playerMovedPiece = null;
+                        }
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                boardPanel.drawBoard(chessBoard);
+                            }
+                        });
+                    }
+                }
+
+                @Override
+                public void mousePressed(final MouseEvent e) {
+
+                }
+
+                @Override
+                public void mouseReleased(final MouseEvent e) {
+
+                }
+
+                @Override
+                public void mouseEntered(final MouseEvent e) {
+
+                }
+
+                @Override
+                public void mouseExited(final MouseEvent e) {
+
+                }
+            });
             validate();
         }
 
@@ -112,6 +218,27 @@ public class Table {
                 setBackground(this.tileID % 2 == 0 ? Color.black : Color.gray);
             }
         }
+
+        public void drawTile(final Board board) {
+            assignTileColor();
+            assignTilePieceIcon(board);
+            validate();
+            repaint();
+        }
+
+        public void highlightLegalMoves(final Board board) {
+            if (true) {
+                for (final Move move : pieceLegalMoves(board)) {
+                    if (move.getDestination() == this.tileID) {
+                        try {
+                            add(new JLabel(new ImageIcon(ImageIO.read(new File("art/pieces/chinese/BH")))));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public class BoardPanel extends JPanel {
@@ -127,6 +254,16 @@ public class Table {
             }
             setPreferredSize(boarddim);
             validate();
+        }
+
+        public void drawBoard(final Board board) {
+            removeAll();
+            for (final TilePanel tilePanel : boardDirection.traverse(boardTiles)) {
+                tilePanel.drawTile(board);
+                add(tilePanel);
+            }
+            validate();
+            repaint();
         }
     }
 }

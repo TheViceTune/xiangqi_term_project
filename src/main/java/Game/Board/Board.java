@@ -3,9 +3,10 @@ package Game.Board;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import Game.Pieces.Advisor;
 import Game.Pieces.Bishop;
@@ -25,7 +26,7 @@ public class Board {
     private final Collection<Piece> redPieces;
     private final Collection<Piece> blackPieces;
 
-    private final RedPlayer redPlayer;
+    public final RedPlayer redPlayer;
     private final BlackPlayer blackPlayer;
 
     private final Player currentPlayer;
@@ -109,34 +110,9 @@ public class Board {
         return tiles;
     }
 
-    public Iterable<Move> getAllLegalMoves() {
-        return new Iterable<Move>() {
-            @Override
-            public Iterator<Move> iterator() {
-                return new Iterator<Move>() {
-                    private Iterator<Move> redIterator = redPlayer.getLegalMoves().iterator();
-                    private Iterator<Move> blackIterator = blackPlayer.getLegalMoves().iterator();
-                    private boolean redTurn = true; // Flag to alternate between red and black
-
-                    @Override
-                    public boolean hasNext() {
-                        return redIterator.hasNext() || blackIterator.hasNext();
-                    }
-
-                    @Override
-                    public Move next() {
-                        if (redIterator.hasNext() && redTurn) {
-                            return redIterator.next();
-                        } else if (blackIterator.hasNext()) {
-                            redTurn = false;
-                            return blackIterator.next();
-                        } else {
-                            throw new IllegalStateException("No more elements");
-                        }
-                    }
-                };
-            }
-        };
+    public Collection<Move> getAllLegalMoves() {
+        return Stream.concat(this.redPlayer.getLegalMoves().stream(),
+                this.blackPlayer.getLegalMoves().stream()).collect(Collectors.toList());
     }
 
     public static Board createStandardBoard() {

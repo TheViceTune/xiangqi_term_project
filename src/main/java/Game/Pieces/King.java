@@ -13,26 +13,48 @@ import Game.Board.Tile;
 import Game.Side;
 
 public class King extends Piece {
-    private final static int[] CANDIDATE = { -10, -9, -8, -1, 1, 8, 9, 10 };
+    private final int[] CANDIDATE;
 
     public King(final int position, final Side pieceSide) {
         super(PieceType.KING, position, pieceSide);
+        this.CANDIDATE = determineCandidateOffsets(this.position);
+    }
+
+    private int[] determineCandidateOffsets(int position) {
+        if (position == 13 || position == 76) {
+            return new int[] { -10, -9, -8, -1, 1, 8, 9, 10 };
+        } else if (position == 4 || position == 67) {
+            return new int[] { -1, 1, 9 };
+        } else if (position == 22 || position == 85) {
+            return new int[] { -9, -1, 1 };
+        } else if (position == 12 || position == 75) {
+            return new int[] { -9, 1, 9 };
+        } else if (position == 14 || position == 77) {
+            return new int[] { -9, -1, 9 };
+        } else if (position == 3 || position == 66) {
+            return new int[] { 1, 9, 10 };
+        } else if (position == 5 || position == 68) {
+            return new int[] { -1, 8, 9 };
+        } else if (position == 21 || position == 84) {
+            return new int[] { -9, -8, 1 };
+        } else {
+            return new int[] { -1, -9, -10 };
+        }
     }
 
     @Override
     public Collection<Move> legalMoves(Board board) {
         final List<Move> legalMoves = new ArrayList<>();
-        int candidateDestination;
-
         for (final int nextCoord : CANDIDATE) {
-            candidateDestination = this.position + nextCoord;
+            int candidateDestination = this.position + nextCoord;
             if (BoardUtils.isValid(candidateDestination)) {
                 if (isFirstColumnKingdomExclusion(this.position, nextCoord) ||
                         isSecondColumnKingdomExclusion(this.position, nextCoord) ||
-                        isTopRowKingdomExclusion(position, candidateDestination)) {
+                        isTopRowKingdomExclusion(this.position, nextCoord) ||
+                        isTopRowKingdomExclusionBlack(this.position, candidateDestination)) {
                     continue;
                 }
-                final Tile candidateTile = Board.getTile(candidateDestination);
+                final Tile candidateTile = board.getTile(candidateDestination);
 
                 if (!candidateTile.isOccupied()) {
                     legalMoves.add(new MajorMove(board, this, candidateDestination));
@@ -43,7 +65,6 @@ public class King extends Piece {
                     if (this.pieceSide != destinationSide) {
                         legalMoves.add(new AttackMove(board, this, candidateDestination, atDestination));
                     }
-                    break;
                 }
             }
         }
@@ -71,7 +92,12 @@ public class King extends Piece {
     }
 
     public static boolean isTopRowKingdomExclusion(final int position, final int candidateOffset) {
-        return BoardUtils.EIGHTH_RANK[position] && ((candidateOffset == 8) || (candidateOffset == 9)
+        return BoardUtils.SEVENTH_RANK[position] && ((candidateOffset == 8) || (candidateOffset == 9)
+                || (candidateOffset == 10));
+    }
+
+    public static boolean isTopRowKingdomExclusionBlack(final int position, final int candidateOffset) {
+        return BoardUtils.THIRD_RANK[position] && ((candidateOffset == 8) || (candidateOffset == 9)
                 || (candidateOffset == 10));
     }
 }

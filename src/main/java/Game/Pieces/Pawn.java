@@ -24,15 +24,15 @@ public class Pawn extends Piece {
     public Collection<Move> legalMoves(Board board) {
         final List<Move> legalMoves = new ArrayList<>();
         int candidateDestination;
-        if (BoardUtils.isBeforeRiver(position)) {
+        if (BoardUtils.isBeforeRiver(position, this.pieceSide)) {
             for (final int nextCoord : CANDIDATE_BEFORE_RIVER) {
-                candidateDestination = this.position + nextCoord;
+                candidateDestination = this.position + (this.pieceSide == Side.Red ? nextCoord : -nextCoord);
                 if (BoardUtils.isValid(candidateDestination)) {
                     if (isFirstColumnExclusion(this.position, nextCoord) ||
                             isNinthColumnExclusion(this.position, nextCoord)) {
                         continue;
                     }
-                    final Tile candidateTile = Board.getTile(candidateDestination);
+                    final Tile candidateTile = board.getTile(candidateDestination);
 
                     if (!candidateTile.isOccupied()) {
                         legalMoves.add(new MajorMove(board, this, candidateDestination));
@@ -48,13 +48,13 @@ public class Pawn extends Piece {
             }
         } else {
             for (final int nextCoord : CANDIDATE_AFTER_RIVER) {
-                candidateDestination = this.position + (this.getSide().getDirection() * nextCoord);
+                candidateDestination = this.position + (this.pieceSide == Side.Red ? nextCoord : -nextCoord);
                 if (BoardUtils.isValid(candidateDestination)) {
                     if (isFirstColumnExclusion(this.position, nextCoord) ||
                             isNinthColumnExclusion(this.position, nextCoord)) {
                         continue;
                     }
-                    final Tile candidateTile = Board.getTile(candidateDestination);
+                    final Tile candidateTile = board.getTile(candidateDestination);
 
                     if (!candidateTile.isOccupied()) {
                         legalMoves.add(new MajorMove(board, this, candidateDestination));
@@ -83,10 +83,10 @@ public class Pawn extends Piece {
     }
 
     public static boolean isFirstColumnExclusion(final int position, final int candidateOffset) {
-        return BoardUtils.FIRST_COLUMN[position] && ((candidateOffset == -1));
+        return BoardUtils.FIRST_COLUMN[position] && (candidateOffset == -1);
     }
 
     public static boolean isNinthColumnExclusion(final int position, final int candidateOffset) {
-        return BoardUtils.NINTH_COLUMN[position] && ((candidateOffset == 1));
+        return BoardUtils.NINTH_COLUMN[position] && (candidateOffset == 1);
     }
 }

@@ -5,8 +5,8 @@ import Game.Pieces.Piece;
 
 public abstract class Move {
     final Board board;
-    final Piece movedPiece;
-    final int destination;
+    public final Piece movedPiece;
+    public final int destination;
 
     public static final Move NULL_MOVE = new NullMove();
 
@@ -56,7 +56,7 @@ public abstract class Move {
 
         builder.setPiece(this.movedPiece.movePiece(this));
         builder.setTurn(this.board.currentPlayer().getOpponent().getSide());
-        return null;
+        return builder.build();
     }
 
     public static final class MajorMove extends Move {
@@ -88,11 +88,6 @@ public abstract class Move {
             }
             final AttackMove otherAttackMove = (AttackMove) other;
             return super.equals(otherAttackMove) && getAttackedPiece().equals(otherAttackMove.getAttackedPiece());
-        }
-
-        @Override
-        public Board execute() {
-            return null;
         }
 
         @Override

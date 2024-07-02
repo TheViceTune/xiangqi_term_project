@@ -17,7 +17,7 @@ public class Knight extends Piece {
     private final static int[] CANDIDATE = { -19, -17, -11, -7, 7, 11, 17, 19 };
 
     public Knight(final int position, final Side pieceSide) {
-        super(PieceType.HORSE, position, pieceSide);
+        super(PieceType.KNIGHT, position, pieceSide);
     }
 
     @Override
@@ -58,7 +58,7 @@ public class Knight extends Piece {
 
     @Override
     public String toString() {
-        return PieceType.HORSE.toString();
+        return PieceType.KNIGHT.toString();
     }
 
     public static boolean isFirstColumnExclusion(final int position, final int candidateOffset) {

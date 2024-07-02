@@ -18,7 +18,7 @@ public abstract class Piece {
         this.pieceType = pieceType;
         this.position = position;
         this.pieceSide = pieceSide;
-        this.isFirstMove = false;
+        this.isFirstMove = true;
         this.hashCode = computeHashCode();
     }
 
@@ -75,7 +75,7 @@ public abstract class Piece {
                 return false;
             }
         },
-        HORSE("H") {
+        KNIGHT("H") {
             @Override
             public boolean isKing() {
                 return false;

@@ -13,7 +13,7 @@ import Game.Board.Tile;
 import Game.Side;
 
 public class Advisor extends Piece {
-    private final static int[] CANDIDATE = { -10, -9, -8, -1, 1, 8, 9, 10 };
+    private final static int[] CANDIDATE = { -10, -8, 8, 10 };
 
     public Advisor(final int position, final Side pieceSide) {
         super(PieceType.ADVISOR, position, pieceSide);
@@ -29,7 +29,8 @@ public class Advisor extends Piece {
             if (BoardUtils.isValid(candidateDestination)) {
                 if (isFirstColumnKingdomExclusion(this.position, nextCoord) ||
                         isSecondColumnKingdomExclusion(this.position, nextCoord) ||
-                        isTopRowKingdomExclusion(position, candidateDestination)) {
+                        isTopRowKingdomExclusion(this.position, candidateDestination) ||
+                        isTop2RowKingdomExclusion(this.position, candidateDestination)) {
                     continue;
                 }
                 final Tile candidateTile = Board.getTile(candidateDestination);
@@ -70,5 +71,9 @@ public class Advisor extends Piece {
 
     public static boolean isTopRowKingdomExclusion(final int position, final int candidateOffset) {
         return BoardUtils.EIGHTH_RANK[position] && ((candidateOffset == 8) || (candidateOffset == 10));
+    }
+
+    public static boolean isTop2RowKingdomExclusion(final int position, final int candidateOffset) {
+        return BoardUtils.THIRD_RANK[position] && ((candidateOffset == -8) || (candidateOffset == -10));
     }
 }

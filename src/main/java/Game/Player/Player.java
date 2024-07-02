@@ -1,17 +1,19 @@
 package Game.Player;
 
-import Game.Board.Board;
-import Game.Pieces.King;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+
+import Game.Board.Board;
 import Game.Board.Move;
+import Game.Pieces.King;
 import Game.Pieces.Piece;
 import Game.Side;
-import java.util.*;
 
 public abstract class Player {
     protected final Board board;
     protected final King playerKing;
-    protected final Collection<Move> legalMoves;
+    public final Collection<Move> legalMoves;
     private final boolean isInCheck;
 
     Player(final Board board, final Collection<Move> legalMoves, final Collection<Move> opponentMoves) {
@@ -21,10 +23,10 @@ public abstract class Player {
         this.isInCheck = !Player.calculateAttacksOnTile(this.playerKing.getPosition(), opponentMoves).isEmpty();
     }
 
-    private static Collection<Move> calculateAttacksOnTile (int piecePosition, Collection<Move> moves) {
+    private static Collection<Move> calculateAttacksOnTile(int piecePosition, Collection<Move> moves) {
         final List<Move> attackMoves = new ArrayList<>();
         for (final Move move : moves) {
-            if(piecePosition == move.getDestinationCoordinates()) {
+            if (piecePosition == move.getDestinationCoordinates()) {
                 attackMoves.add(move);
             }
         }
@@ -40,7 +42,7 @@ public abstract class Player {
         throw new RuntimeException("Not valid board");
     }
 
-    public boolean isMoveLegal (final Move move) {
+    public boolean isMoveLegal(final Move move) {
         return this.legalMoves.contains(move);
     }
 
@@ -49,11 +51,11 @@ public abstract class Player {
     }
 
     public boolean isInCheckMate() {
-        return this.isInCheck && !hasEscape();
+        return this.isInCheck && !hasEscapeMoves();
     }
 
     protected boolean hasEscapeMoves() {
-        for(final Move move : this.legalMoves) {
+        for (final Move move : this.legalMoves) {
             final MoveTransition transition = makeMove(move);
             if (transition.getMoveStatus().isDone()) {
                 return true;
@@ -63,7 +65,7 @@ public abstract class Player {
     }
 
     public boolean isInStalemate() {
-        return !this.isInCheck && !hasEscape();
+        return !this.isInCheck && !hasEscapeMoves();
     }
 
     public King getPlayerKing() {
@@ -75,20 +77,23 @@ public abstract class Player {
     }
 
     public MoveTransition makeMove(final Move move) {
-        if(!isMoveLegal(move)) {
+        if (!isMoveLegal(move)) {
             return new MoveTransition(this.board, move, MoveStatus.ILLEGAL_MOVE);
         }
-
         final Board transitionBoard = move.execute();
-        final Collection<Move> kingAttacks = Player.calculateAttacksOnTile(transitionBoard.currentPlayer().getOpponent().getPlayerKing().getPosition(), transitionBoard.currentPlayer().getLeglMoves());
+        final Collection<Move> kingAttacks = Player.calculateAttacksOnTile(
+                transitionBoard.currentPlayer().getOpponent().getPlayerKing().getPosition(),
+                transitionBoard.currentPlayer().getLegalMoves());
 
-        if(!kingAttacks.isEmpty()) {
-            return new MoveTransition (this.board, move, MoveStatus.PLAYER_IN_CHECK);
+        if (!kingAttacks.isEmpty()) {
+            return new MoveTransition(this.board, move, MoveStatus.PLAYER_IN_CHECK);
         }
         return new MoveTransition(transitionBoard, move, MoveStatus.DONE);
     }
 
     public abstract Collection<Piece> getActivePieces();
+
     public abstract Side getSide();
+
     public abstract Player getOpponent();
 }
