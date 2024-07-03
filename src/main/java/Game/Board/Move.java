@@ -1,6 +1,6 @@
 package Game.Board;
 
-import Game.Board.Board.Builder;
+import Game.Board.Board.BoardBuilder;
 import Game.Pieces.Piece;
 
 public abstract class Move {
@@ -36,32 +36,47 @@ public abstract class Move {
             return false;
         }
         final Move otherMove = (Move) other;
-        return getCurrentCoordinate() == otherMove.getCurrentCoordinate()
-                && getDestinationCoordinates() == otherMove.getDestinationCoordinates()
+        return getCurCoord() == otherMove.getCurCoord()
+                && getDestCoord() == otherMove.getDestCoord()
                 && getMovePiece().equals(otherMove.getMovePiece());
     }
 
-    public Board execute() {
-        final Builder builder = new Builder();
+    @Override
+    public String toString() {
+        return movedPiece.getType().toString() + Utils.getPositionAtCoord(this.destination);
+    }
 
-        for (final Piece piece : this.board.currentPlayer().getActivePieces()) {
+    public Board execute() {
+        final BoardBuilder builder = new BoardBuilder();
+
+        for (final Piece piece : this.board.currentPlayer().getCurPieces()) {
             if (!this.movedPiece.equals(piece)) {
-                builder.setPiece(piece);
+                builder.pieceSet(piece);
             }
         }
 
-        for (final Piece piece : this.board.currentPlayer().getOpponent().getActivePieces()) {
-            builder.setPiece(piece);
+        for (final Piece piece : this.board.currentPlayer().getOpponent().getCurPieces()) {
+            builder.pieceSet(piece);
         }
 
-        builder.setPiece(this.movedPiece.movePiece(this));
+        builder.pieceSet(this.movedPiece.movePiece(this));
         builder.setTurn(this.board.currentPlayer().getOpponent().getSide());
         return builder.build();
     }
 
-    public static final class MajorMove extends Move {
-        public MajorMove(Board board, Piece movedPiece, int destination) {
+    public static final class MainMove extends Move {
+        public MainMove(Board board, Piece movedPiece, int destination) {
             super(board, movedPiece, destination);
+        }
+
+        @Override
+        public boolean equals(final Object other) {
+            return this == other || other instanceof MainMove && super.equals(other);
+        }
+
+        @Override
+        public String toString() {
+            return movedPiece.getType().toString() + Utils.getPositionAtCoord(this.destination);
         }
     }
 
@@ -87,7 +102,7 @@ public abstract class Move {
                 return false;
             }
             final AttackMove otherAttackMove = (AttackMove) other;
-            return super.equals(otherAttackMove) && getAttackedPiece().equals(otherAttackMove.getAttackedPiece());
+            return super.equals(otherAttackMove) && getAttacked().equals(otherAttackMove.getAttacked());
         }
 
         @Override
@@ -96,7 +111,7 @@ public abstract class Move {
         }
 
         @Override
-        public Piece getAttackedPiece() {
+        public Piece getAttacked() {
             return this.attackedPiece;
         }
 
@@ -127,15 +142,16 @@ public abstract class Move {
         }
     }
 
-    public static class MoveFactory {
-        private MoveFactory() {
-            throw new RuntimeException("not instantiable");
+    public static class MoveGenerator {
+        private MoveGenerator() {
+            throw new RuntimeException("x");
         }
 
-        public static Move createMove(final Board board, final int currentCoordinate, final int destinationCoordinate) {
+        public static Move generateMove(final Board board, final int curCoord,
+                final int destinationCoordinate) {
             for (final Move move : board.getAllLegalMoves()) {
-                if (move.getCurrentCoordinate() == currentCoordinate
-                        && move.getDestinationCoordinates() == destinationCoordinate) {
+                if (move.getCurCoord() == curCoord
+                        && move.getDestCoord() == destinationCoordinate) {
                     return move;
                 }
             }
@@ -143,11 +159,11 @@ public abstract class Move {
         }
     }
 
-    public int getDestinationCoordinates() {
+    public int getDestCoord() {
         return this.destination;
     }
 
-    public int getCurrentCoordinate() {
+    public int getCurCoord() {
         return this.movedPiece.getPosition();
     }
 
@@ -159,7 +175,7 @@ public abstract class Move {
         return false;
     }
 
-    public Piece getAttackedPiece() {
+    public Piece getAttacked() {
         return null;
     }
 

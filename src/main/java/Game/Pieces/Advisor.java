@@ -5,19 +5,19 @@ import java.util.Collection;
 import java.util.List;
 
 import Game.Board.Board;
-import Game.Board.BoardUtils;
 import Game.Board.Move;
 import Game.Board.Move.AttackMove;
-import Game.Board.Move.MajorMove;
+import Game.Board.Move.MainMove;
 import Game.Board.Tile;
+import Game.Board.Utils;
 import Game.Side;
 
 public class Advisor extends Piece {
-    private final int[] CANDIDATE;
+    private final int[] NEXT;
 
     public Advisor(final int position, final Side pieceSide) {
-        super(PieceType.ADVISOR, position, pieceSide);
-        this.CANDIDATE = determineCandidateOffsets(this.position);
+        super(TypePiece.ADVISOR, position, pieceSide);
+        this.NEXT = determineCandidateOffsets(this.position);
     }
 
     private int[] determineCandidateOffsets(int position) {
@@ -37,25 +37,25 @@ public class Advisor extends Piece {
     @Override
     public Collection<Move> legalMoves(Board board) {
         final List<Move> legalMoves = new ArrayList<>();
-        for (final int nextCoord : CANDIDATE) {
-            int candidateDestination = this.position + nextCoord;
-            if (BoardUtils.isValid(candidateDestination)) {
-                if (isFirstColumnKingdomExclusion(this.position, nextCoord) ||
-                        isSecondColumnKingdomExclusion(this.position, nextCoord) ||
-                        isTopRowKingdomExclusion(this.position, nextCoord) ||
-                        isTopRowKingdomExclusionBlack(this.position, candidateDestination)) {
+        for (final int nextCoord : NEXT) {
+            int potentialTile = this.position + nextCoord;
+            if (Utils.isValid(potentialTile)) {
+                if (excludeFirst(this.position, nextCoord) ||
+                        excludeSecond(this.position, nextCoord) ||
+                        excludeTop(this.position, nextCoord) ||
+                        excludeTopBlack(this.position, potentialTile)) {
                     continue;
                 }
-                final Tile candidateTile = board.getTile(candidateDestination);
+                final Tile candidateTile = board.getTile(potentialTile);
 
                 if (!candidateTile.isOccupied()) {
-                    legalMoves.add(new MajorMove(board, this, candidateDestination));
+                    legalMoves.add(new MainMove(board, this, potentialTile));
                 } else {
                     final Piece atDestination = candidateTile.getPiece();
                     final Side destinationSide = atDestination.getSide();
 
                     if (this.pieceSide != destinationSide) {
-                        legalMoves.add(new AttackMove(board, this, candidateDestination, atDestination));
+                        legalMoves.add(new AttackMove(board, this, potentialTile, atDestination));
                     }
                 }
             }
@@ -65,31 +65,31 @@ public class Advisor extends Piece {
 
     @Override
     public Advisor movePiece(Move move) {
-        return new Advisor(move.getDestinationCoordinates(), move.getMovePiece().getSide());
+        return new Advisor(move.getDestCoord(), move.getMovePiece().getSide());
     }
 
     @Override
     public String toString() {
-        return PieceType.ADVISOR.toString();
+        return TypePiece.ADVISOR.toString();
     }
 
-    public static boolean isFirstColumnKingdomExclusion(final int position, final int candidateOffset) {
-        return BoardUtils.FOURTH_COLUMN[position] && ((candidateOffset == -10) || (candidateOffset == -1)
+    public static boolean excludeFirst(final int position, final int candidateOffset) {
+        return Utils.FOURTH[position] && ((candidateOffset == -10) || (candidateOffset == -1)
                 || (candidateOffset == 8));
     }
 
-    public static boolean isSecondColumnKingdomExclusion(final int position, final int candidateOffset) {
-        return BoardUtils.SIXTH_COLUMN[position] && ((candidateOffset == 10) || (candidateOffset == 1)
+    public static boolean excludeSecond(final int position, final int candidateOffset) {
+        return Utils.SIXTH[position] && ((candidateOffset == 10) || (candidateOffset == 1)
                 || (candidateOffset == -8));
     }
 
-    public static boolean isTopRowKingdomExclusion(final int position, final int candidateOffset) {
-        return BoardUtils.SEVENTH_RANK[position] && ((candidateOffset == 8) || (candidateOffset == 9)
+    public static boolean excludeTop(final int position, final int candidateOffset) {
+        return Utils.SEVENTH_RANK[position] && ((candidateOffset == 8) || (candidateOffset == 9)
                 || (candidateOffset == 10));
     }
 
-    public static boolean isTopRowKingdomExclusionBlack(final int position, final int candidateOffset) {
-        return BoardUtils.THIRD_RANK[position] && ((candidateOffset == 8) || (candidateOffset == 9)
+    public static boolean excludeTopBlack(final int position, final int candidateOffset) {
+        return Utils.THIRD_RANK[position] && ((candidateOffset == 8) || (candidateOffset == 9)
                 || (candidateOffset == 10));
     }
 }

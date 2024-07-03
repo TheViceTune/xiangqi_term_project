@@ -5,19 +5,19 @@ import java.util.Collection;
 import java.util.List;
 
 import Game.Board.Board;
-import Game.Board.BoardUtils;
 import Game.Board.Move;
 import Game.Board.Move.AttackMove;
-import Game.Board.Move.MajorMove;
+import Game.Board.Move.MainMove;
 import Game.Board.Tile;
+import Game.Board.Utils;
 import Game.Side;
 
 public class Bishop extends Piece {
-    private final int[] CANDIDATE;
+    private final int[] NEXT;
 
     public Bishop(int position, Side pieceSide) {
-        super(PieceType.BISHOP, position, pieceSide);
-        this.CANDIDATE = determineCandidateOffsets(this.position);
+        super(TypePiece.ELEPHENT, position, pieceSide);
+        this.NEXT = determineCandidateOffsets(this.position);
     }
 
     private int[] determineCandidateOffsets(int position) {
@@ -37,22 +37,22 @@ public class Bishop extends Piece {
     @Override
     public Collection<Move> legalMoves(Board board) {
         final List<Move> legalMoves = new ArrayList<>();
-        for (final int nextCoord : CANDIDATE) {
-            int candidateDestination = this.position + nextCoord;
-            if (BoardUtils.isValid(candidateDestination)) {
+        for (final int nextCoord : NEXT) {
+            int potentialTile = this.position + nextCoord;
+            if (Utils.isValid(potentialTile)) {
                 if (isBlocked(board, this.position, nextCoord)) {
                     continue;
                 }
-                final Tile candidateTile = board.getTile(candidateDestination);
+                final Tile candidateTile = board.getTile(potentialTile);
 
                 if (!candidateTile.isOccupied()) {
-                    legalMoves.add(new MajorMove(board, this, candidateDestination));
+                    legalMoves.add(new MainMove(board, this, potentialTile));
                 } else {
                     final Piece atDestination = candidateTile.getPiece();
                     final Side destinationSide = atDestination.getSide();
 
                     if (this.pieceSide != destinationSide) {
-                        legalMoves.add(new AttackMove(board, this, candidateDestination, atDestination));
+                        legalMoves.add(new AttackMove(board, this, potentialTile, atDestination));
                     }
                 }
             }
@@ -62,12 +62,12 @@ public class Bishop extends Piece {
 
     @Override
     public Bishop movePiece(Move move) {
-        return new Bishop(move.getDestinationCoordinates(), move.getMovePiece().getSide());
+        return new Bishop(move.getDestCoord(), move.getMovePiece().getSide());
     }
 
     @Override
     public String toString() {
-        return PieceType.BISHOP.toString();
+        return TypePiece.ELEPHENT.toString();
     }
 
     public static boolean isBlocked(final Board board, final int position, final int candidateOffset) {

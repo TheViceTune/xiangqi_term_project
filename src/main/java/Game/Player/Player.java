@@ -6,37 +6,37 @@ import java.util.List;
 
 import Game.Board.Board;
 import Game.Board.Move;
-import Game.Pieces.King;
+import Game.Pieces.General;
 import Game.Pieces.Piece;
 import Game.Side;
 
 public abstract class Player {
     protected final Board board;
-    protected final King playerKing;
+    protected final General playerKing;
     public final Collection<Move> legalMoves;
-    private final boolean isInCheck;
+    private final boolean inCheck;
 
     Player(final Board board, final Collection<Move> legalMoves, final Collection<Move> opponentMoves) {
         this.board = board;
         this.playerKing = establishKing();
         this.legalMoves = legalMoves;
-        this.isInCheck = !Player.calculateAttacksOnTile(this.playerKing.getPosition(), opponentMoves).isEmpty();
+        this.inCheck = !Player.attackOnParticularTile(this.playerKing.getPosition(), opponentMoves).isEmpty();
     }
 
-    private static Collection<Move> calculateAttacksOnTile(int piecePosition, Collection<Move> moves) {
+    private static Collection<Move> attackOnParticularTile(int piecePosition, Collection<Move> moves) {
         final List<Move> attackMoves = new ArrayList<>();
         for (final Move move : moves) {
-            if (piecePosition == move.getDestinationCoordinates()) {
+            if (piecePosition == move.getDestCoord()) {
                 attackMoves.add(move);
             }
         }
         return attackMoves;
     }
 
-    private King establishKing() {
-        for (final Piece piece : getActivePieces()) {
-            if (piece.getPieceType().isKing()) {
-                return (King) piece;
+    private General establishKing() {
+        for (final Piece piece : getCurPieces()) {
+            if (piece.getType().isKing()) {
+                return (General) piece;
             }
         }
         throw new RuntimeException("Not valid board");
@@ -47,17 +47,17 @@ public abstract class Player {
     }
 
     public boolean isInCheck() {
-        return this.isInCheck;
+        return this.inCheck;
     }
 
     public boolean isInCheckMate() {
-        return this.isInCheck && !hasEscapeMoves();
+        return this.inCheck && !hasRemainingMoves();
     }
 
-    protected boolean hasEscapeMoves() {
+    protected boolean hasRemainingMoves() {
         for (final Move move : this.legalMoves) {
-            final MoveTransition transition = makeMove(move);
-            if (transition.getMoveStatus().isDone()) {
+            final ChangeBoard transition = makeMove(move);
+            if (transition.getMoveStatus().isSuccessful()) {
                 return true;
             }
         }
@@ -65,10 +65,10 @@ public abstract class Player {
     }
 
     public boolean isInStalemate() {
-        return !this.isInCheck && !hasEscapeMoves();
+        return !this.inCheck && !hasRemainingMoves();
     }
 
-    public King getPlayerKing() {
+    public General getPlayerKing() {
         return this.playerKing;
     }
 
@@ -76,22 +76,22 @@ public abstract class Player {
         return this.legalMoves;
     }
 
-    public MoveTransition makeMove(final Move move) {
+    public ChangeBoard makeMove(final Move move) {
         if (!isMoveLegal(move)) {
-            return new MoveTransition(this.board, move, MoveStatus.ILLEGAL_MOVE);
+            return new ChangeBoard(this.board, move, MoveDone.ILLEGAL_MOVE);
         }
         final Board transitionBoard = move.execute();
-        final Collection<Move> kingAttacks = Player.calculateAttacksOnTile(
+        final Collection<Move> kingAttacks = Player.attackOnParticularTile(
                 transitionBoard.currentPlayer().getOpponent().getPlayerKing().getPosition(),
                 transitionBoard.currentPlayer().getLegalMoves());
 
         if (!kingAttacks.isEmpty()) {
-            return new MoveTransition(this.board, move, MoveStatus.PLAYER_IN_CHECK);
+            return new ChangeBoard(this.board, move, MoveDone.PLAYER_IN_CHECK);
         }
-        return new MoveTransition(transitionBoard, move, MoveStatus.DONE);
+        return new ChangeBoard(transitionBoard, move, MoveDone.SUCCESS);
     }
 
-    public abstract Collection<Piece> getActivePieces();
+    public abstract Collection<Piece> getCurPieces();
 
     public abstract Side getSide();
 

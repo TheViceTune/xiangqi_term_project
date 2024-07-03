@@ -6,7 +6,7 @@ import java.util.Map;
 import Game.Pieces.Piece;
 
 public abstract class Tile {
-    protected final int tileCoordinate;
+    protected final int tilePosition;
 
     private static final Map<Integer, EmptyTile> EMPTY_TILES = createAllEmpty();
 
@@ -14,7 +14,7 @@ public abstract class Tile {
 
         final Map<Integer, EmptyTile> emptyTileMap = new HashMap<>();
 
-        for (int i = 0; i < BoardUtils.NUM_TILES; i++) {
+        for (int i = 0; i < Utils.numberOfTiles; i++) {
             emptyTileMap.put(i, new EmptyTile(i));
         }
 
@@ -26,11 +26,11 @@ public abstract class Tile {
     }
 
     public Tile(int coord) {
-        this.tileCoordinate = coord;
+        this.tilePosition = coord;
     }
 
     public int getCoord() {
-        return this.tileCoordinate;
+        return this.tilePosition;
     }
 
     public abstract Piece getPiece();

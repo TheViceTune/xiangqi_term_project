@@ -11,8 +11,8 @@ import java.util.stream.Stream;
 import Game.Pieces.Advisor;
 import Game.Pieces.Bishop;
 import Game.Pieces.Cannon;
-import Game.Pieces.King;
-import Game.Pieces.Knight;
+import Game.Pieces.General;
+import Game.Pieces.Horse;
 import Game.Pieces.Pawn;
 import Game.Pieces.Piece;
 import Game.Pieces.Rook;
@@ -31,7 +31,7 @@ public class Board {
 
     private final Player currentPlayer;
 
-    private Board(Builder builder) {
+    private Board(BoardBuilder builder) {
         this.gameBoard = createGameBoard(builder);
         this.redPieces = calculateActivePieces(this.gameBoard, Side.Red);
         this.blackPieces = calculateActivePieces(this.gameBoard, Side.Black);
@@ -47,10 +47,10 @@ public class Board {
     @Override
     public String toString() {
         final StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < BoardUtils.NUM_TILES; i++) {
+        for (int i = 0; i < Utils.numberOfTiles; i++) {
             final String tileText = this.gameBoard.get(i).toString();
             builder.append(String.format("%3s", tileText));
-            if ((i + 1) % BoardUtils.NUM_TILES_PER_ROW == 0) {
+            if ((i + 1) % Utils.tilesPerRow == 0) {
                 builder.append("\n");
             }
         }
@@ -102,9 +102,9 @@ public class Board {
         return gameBoard.get(tileCoord);
     }
 
-    private static List<Tile> createGameBoard(final Builder builder) {
-        final List<Tile> tiles = new ArrayList<>(BoardUtils.NUM_TILES);
-        for (int i = 0; i < BoardUtils.NUM_TILES; i++) {
+    private static List<Tile> createGameBoard(final BoardBuilder builder) {
+        final List<Tile> tiles = new ArrayList<>(Utils.numberOfTiles);
+        for (int i = 0; i < Utils.numberOfTiles; i++) {
             tiles.add(Tile.createTile(i, builder.boardConfig.get(i)));
         }
         return tiles;
@@ -116,51 +116,51 @@ public class Board {
     }
 
     public static Board createStandardBoard() {
-        final Builder builder = new Builder();
+        final BoardBuilder builder = new BoardBuilder();
         // RED
-        builder.setPiece(new Rook(0, Side.Red));
-        builder.setPiece(new Rook(8, Side.Red));
-        builder.setPiece(new Knight(1, Side.Red));
-        builder.setPiece(new Knight(7, Side.Red));
-        builder.setPiece(new Bishop(2, Side.Red));
-        builder.setPiece(new Bishop(6, Side.Red));
-        builder.setPiece(new Advisor(3, Side.Red));
-        builder.setPiece(new Advisor(5, Side.Red));
-        builder.setPiece(new King(4, Side.Red));
-        builder.setPiece(new Cannon(19, Side.Red));
-        builder.setPiece(new Cannon(25, Side.Red));
-        builder.setPiece(new Pawn(27, Side.Red));
-        builder.setPiece(new Pawn(29, Side.Red));
-        builder.setPiece(new Pawn(31, Side.Red));
-        builder.setPiece(new Pawn(33, Side.Red));
-        builder.setPiece(new Pawn(35, Side.Red));
+        builder.pieceSet(new Rook(0, Side.Red));
+        builder.pieceSet(new Rook(8, Side.Red));
+        builder.pieceSet(new Horse(1, Side.Red));
+        builder.pieceSet(new Horse(7, Side.Red));
+        builder.pieceSet(new Bishop(2, Side.Red));
+        builder.pieceSet(new Bishop(6, Side.Red));
+        builder.pieceSet(new Advisor(3, Side.Red));
+        builder.pieceSet(new Advisor(5, Side.Red));
+        builder.pieceSet(new General(4, Side.Red));
+        builder.pieceSet(new Cannon(19, Side.Red));
+        builder.pieceSet(new Cannon(25, Side.Red));
+        builder.pieceSet(new Pawn(27, Side.Red));
+        builder.pieceSet(new Pawn(29, Side.Red));
+        builder.pieceSet(new Pawn(31, Side.Red));
+        builder.pieceSet(new Pawn(33, Side.Red));
+        builder.pieceSet(new Pawn(35, Side.Red));
         // Black
-        builder.setPiece(new Rook(89, Side.Black));
-        builder.setPiece(new Rook(81, Side.Black));
-        builder.setPiece(new Knight(88, Side.Black));
-        builder.setPiece(new Knight(82, Side.Black));
-        builder.setPiece(new Bishop(87, Side.Black));
-        builder.setPiece(new Bishop(83, Side.Black));
-        builder.setPiece(new Advisor(86, Side.Black));
-        builder.setPiece(new Advisor(84, Side.Black));
-        builder.setPiece(new King(85, Side.Black));
-        builder.setPiece(new Cannon(64, Side.Black));
-        builder.setPiece(new Cannon(70, Side.Black));
-        builder.setPiece(new Pawn(54, Side.Black));
-        builder.setPiece(new Pawn(56, Side.Black));
-        builder.setPiece(new Pawn(58, Side.Black));
-        builder.setPiece(new Pawn(60, Side.Black));
-        builder.setPiece(new Pawn(62, Side.Black));
+        builder.pieceSet(new Rook(89, Side.Black));
+        builder.pieceSet(new Rook(81, Side.Black));
+        builder.pieceSet(new Horse(88, Side.Black));
+        builder.pieceSet(new Horse(82, Side.Black));
+        builder.pieceSet(new Bishop(87, Side.Black));
+        builder.pieceSet(new Bishop(83, Side.Black));
+        builder.pieceSet(new Advisor(86, Side.Black));
+        builder.pieceSet(new Advisor(84, Side.Black));
+        builder.pieceSet(new General(85, Side.Black));
+        builder.pieceSet(new Cannon(64, Side.Black));
+        builder.pieceSet(new Cannon(70, Side.Black));
+        builder.pieceSet(new Pawn(54, Side.Black));
+        builder.pieceSet(new Pawn(56, Side.Black));
+        builder.pieceSet(new Pawn(58, Side.Black));
+        builder.pieceSet(new Pawn(60, Side.Black));
+        builder.pieceSet(new Pawn(62, Side.Black));
         // Red to move
         builder.setTurn(Side.Red);
         return builder.build();
     }
 
-    public static class Builder {
+    public static class BoardBuilder {
         Map<Integer, Piece> boardConfig;
         Side nextTurn;
 
-        public Builder() {
+        public BoardBuilder() {
             this.boardConfig = new HashMap<>();
         }
 
@@ -168,12 +168,12 @@ public class Board {
             return new Board(this);
         }
 
-        public Builder setPiece(final Piece piece) {
+        public BoardBuilder pieceSet(final Piece piece) {
             this.boardConfig.put(piece.getPosition(), piece);
             return this;
         }
 
-        public Builder setTurn(final Side nextTurn) {
+        public BoardBuilder setTurn(final Side nextTurn) {
             this.nextTurn = nextTurn;
             return this;
         }

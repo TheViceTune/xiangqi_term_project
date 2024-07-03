@@ -8,12 +8,13 @@ import Game.Pieces.Piece;
 import Game.Side;
 
 public class BlackPlayer extends Player {
-    public BlackPlayer(final Board board, final Collection<Move> redPLayerLegalMoves, final Collection<Move> blackPlayerLegalMoves) {
+    public BlackPlayer(final Board board, final Collection<Move> redPLayerLegalMoves,
+            final Collection<Move> blackPlayerLegalMoves) {
         super(board, blackPlayerLegalMoves, redPLayerLegalMoves);
-    }  
+    }
 
     @Override
-    public Collection<Piece> getActivePieces() {
+    public Collection<Piece> getCurPieces() {
         return this.board.getBlackPieces();
     }
 
